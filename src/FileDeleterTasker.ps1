@@ -23,6 +23,7 @@ $buttonBrowse.Add_Click({
         $textBoxLokalizacja.Text = $folderBrowserDialog.SelectedPath
     }
 })
+
 $Form.Controls.Add($buttonBrowse)
 
 $textBoxLokalizacja = New-Object System.Windows.Forms.TextBox
