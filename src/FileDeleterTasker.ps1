@@ -67,7 +67,7 @@ $buttonDodajZdarzenie.Location = New-Object System.Drawing.Point(20, 180)
 $buttonDodajZdarzenie.Size = New-Object System.Drawing.Size(100, 30)
 $buttonDodajZdarzenie.Text = "Dodaj zdarzenie"
 $buttonDodajZdarzenie.Add_Click({
-    $lokacja = $textBoxLokalizacja.Text
+    $lokalizacja = $textBoxLokalizacja.Text
     $godzina = $dateTimePickerGodzina.Value.ToString("HH:mm")
     $starszeNiz = $numericUpDownStarszeNiz.Value * -1
     Write-Output $starszeNiz
@@ -77,14 +77,16 @@ $buttonDodajZdarzenie.Add_Click({
     $taskName = "Usuwanie starszych plików"
     $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $taskName }
 
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Command `"Get-ChildItem '$lokacja' -Recurse -File | Where CreationTime -lt  (Get-Date).AddDays($starszeNiz)  | Remove-Item -Force"
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Command `"Get-ChildItem '$lokalizacja' -Recurse -File | Where CreationTime -lt  (Get-Date).AddDays($starszeNiz)  | Remove-Item -Force"
     $trigger = New-ScheduledTaskTrigger -Daily -At $godzina
     $settings = New-ScheduledTaskSettingsSet
 
     if($taskExists) {
-    Set-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings 
+    Set-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings
+    [System.Windows.Forms.MessageBox]::Show("Zdarzenie zostało zaktualizowane.", "Informacja", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information) 
     } else {
     Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings
+    [System.Windows.Forms.MessageBox]::Show("Zdarzenie usuwania zostało ustawione.", "Informacja", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
     }
 })
 
@@ -92,28 +94,31 @@ $Form.Controls.Add($buttonDodajZdarzenie)
 
 # Usuń pliki z wskazanej lokalizacji
 <#
-
 $buttonUsunTeraz = New-Object System.Windows.Forms.Button
 $buttonUsunTeraz.Location = New-Object System.Drawing.Point(130, 180)
 $buttonUsunTeraz.Size = New-Object System.Drawing.Size(100, 30)
 $buttonUsunTeraz.Text = "Usuń pliki"
 $buttonUsunTeraz.Add_Click({
 
-    $lokacja = $textBoxLokalizacja.Text
+    $lokalizacja = $textBoxLokalizacja.Text
     $starszeNiz = $numericUpDownStarszeNiz.Value * -1
 
     try{
     
-        Get-ChildItem '$lokacja' -include *.jpg -Recurse -File | Where CreationTime -lt  (Get-Date).AddDays($starszeNiz)  | Remove-Item -Force
+        Get-ChildItem $lokalizacja -include *.jpg -Recurse -File | Where CreationTime -lt  (Get-Date).AddDays($starszeNiz) #| Remove-Item -Force
     }
-    catch [System.ItemNotFoundException]
+    catch  [System.Management.Automation.ItemNotFoundException]
     {
-        [System.Windows.MessageBox]::Show($_.Exception.Message)
+        [System.Windows.Forms.MessageBox]::Show("To jest przykładowy MessageBox.",
+        "Informacja",
+        [System.Windows.Forms.MessageBoxButtons]::OK,
+        [System.Windows.Forms.MessageBoxIcon]::Information)
     }
  
 })
 
 $Form.Controls.Add($buttonUsunTeraz)
+
 #>
 
 $buttonAnuluj = New-Object System.Windows.Forms.Button
