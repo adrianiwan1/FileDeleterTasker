@@ -44,7 +44,7 @@ $dateTimePickerGodzina.Format = [System.Windows.Forms.DateTimePickerFormat]::Cus
 $dateTimePickerGodzina.CustomFormat = "HH:mm"
 $dateTimePickerGodzina.ShowUpDown = $true
 $dateTimePickerGodzina.Location = New-Object System.Drawing.Point(20, 90)
-$dateTimePickerGodzina.Size = New-Object System.Drawing.Size(50, 20)
+$dateTimePickerGodzina.Size = New-Object System.Drawing.Size(50, 30)
 $Form.Controls.Add($dateTimePickerGodzina)
 
 
@@ -85,15 +85,24 @@ $buttonDodajZdarzenie.Add_Click({
     Set-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings
     [System.Windows.Forms.MessageBox]::Show("Zdarzenie zostało zaktualizowane.", "Informacja", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information) 
     } else {
-    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings
-    [System.Windows.Forms.MessageBox]::Show("Zdarzenie usuwania zostało ustawione.", "Informacja", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        try{
+            Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings -ErrorAction Stop
+            [System.Windows.Forms.MessageBox]::Show("Zdarzenie usuwania zostało ustawione.", "Informacja", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        }
+        catch
+        {
+            [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacja  + " nie istnieje",
+            "Błąd",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
     }
 })
 
 $Form.Controls.Add($buttonDodajZdarzenie)
 
 # Usuń pliki z wskazanej lokalizacji
-<#
+
 $buttonUsunTeraz = New-Object System.Windows.Forms.Button
 $buttonUsunTeraz.Location = New-Object System.Drawing.Point(130, 180)
 $buttonUsunTeraz.Size = New-Object System.Drawing.Size(100, 30)
@@ -105,21 +114,19 @@ $buttonUsunTeraz.Add_Click({
 
     try{
     
-        Get-ChildItem $lokalizacja -include *.jpg -Recurse -File | Where CreationTime -lt  (Get-Date).AddDays($starszeNiz) #| Remove-Item -Force
+        Get-ChildItem $lokalizacja -include *.jpg -Recurse -File  -ErrorAction Stop| Where CreationTime -lt  (Get-Date).AddDays($starszeNiz) #| Remove-Item -Force
     }
-    catch  [System.Management.Automation.ItemNotFoundException]
+    catch
     {
-        [System.Windows.Forms.MessageBox]::Show("To jest przykładowy MessageBox.",
-        "Informacja",
+        [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacja  + " nie istnieje",
+        "Błąd",
         [System.Windows.Forms.MessageBoxButtons]::OK,
-        [System.Windows.Forms.MessageBoxIcon]::Information)
+        [System.Windows.Forms.MessageBoxIcon]::Error)
     }
  
 })
 
 $Form.Controls.Add($buttonUsunTeraz)
-
-#>
 
 $buttonAnuluj = New-Object System.Windows.Forms.Button
 $buttonAnuluj.Location = New-Object System.Drawing.Point(280, 180)
