@@ -21,14 +21,17 @@ $groupBoxTworzenieZadania.Location = New-Object System.Drawing.Point(10, 10)
 $groupBoxTworzenieZadania.Size = New-Object System.Drawing.Size(400, 180)
 $MainTabPage.Controls.Add($groupBoxTworzenieZadania)
 
+# Label Lokalizacja
 $labelLokalizacja = New-Object System.Windows.Forms.Label
 $labelLokalizacja.Text = "Lokalizacja folderu:"
 $labelLokalizacja.Location = New-Object System.Drawing.Point(20, 20)
 $labelLokalizacja.AutoSize = $true
 $groupBoxTworzenieZadania.Controls.Add($labelLokalizacja)
 
+# Folder Browsing
 $folderBrowserDialog = New-Object System.Windows.Forms.FolderBrowserDialog
 $folderBrowserDialog.SelectedPath = "C:\TotalControlParking\CCP_LPR\photo"
+# Button browse
 $buttonBrowse = New-Object System.Windows.Forms.Button
 $buttonBrowse.Text = "Przeglądaj..."
 $buttonBrowse.Location = New-Object System.Drawing.Point(20, 40)
@@ -42,6 +45,7 @@ $buttonBrowse.Add_Click({
 
 $groupBoxTworzenieZadania.Controls.Add($buttonBrowse)
 
+#Textbox Lokalizacja
 $textBoxLokalizacja = New-Object System.Windows.Forms.TextBox
 $textBoxLokalizacja.ReadOnly = $false
 $textBoxLokalizacja.Location = New-Object System.Drawing.Point(130, 40)
@@ -49,12 +53,14 @@ $textBoxLokalizacja.Size = New-Object System.Drawing.Size(250, 20)
 $textBoxLokalizacja.Text = $folderBrowserDialog.SelectedPath
 $groupBoxTworzenieZadania.Controls.Add($textBoxLokalizacja)
 
+# Label Godzina
 $labelGodzina = New-Object System.Windows.Forms.Label
 $labelGodzina.Text = "Godzina uruchamiania zadania:"
 $labelGodzina.Location = New-Object System.Drawing.Point(20, 70)
 $labelGodzina.AutoSize = $true
 $groupBoxTworzenieZadania.Controls.Add($labelGodzina)
 
+# Datetimepicker Godzina
 $dateTimePickerGodzina = New-Object System.Windows.Forms.DateTimePicker
 $dateTimePickerGodzina.Format = [System.Windows.Forms.DateTimePickerFormat]::Custom
 $dateTimePickerGodzina.CustomFormat = "HH:mm"
@@ -63,13 +69,14 @@ $dateTimePickerGodzina.Location = New-Object System.Drawing.Point(20, 90)
 $dateTimePickerGodzina.Size = New-Object System.Drawing.Size(50, 30)
 $groupBoxTworzenieZadania.Controls.Add($dateTimePickerGodzina)
 
-
+#Label StarszeNiz
 $labelStarszeNiz = New-Object System.Windows.Forms.Label
 $labelStarszeNiz.Text = "Usuwać pliki starsze niż (w dniach, max 365):"
 $labelStarszeNiz.Location = New-Object System.Drawing.Point(20, 120)
 $labelStarszeNiz.AutoSize = $true
 $groupBoxTworzenieZadania.Controls.Add($labelStarszeNiz)
 
+#NumericUpDown StarszeNiz
 $numericUpDownStarszeNiz = New-Object System.Windows.Forms.NumericUpDown
 $numericUpDownStarszeNiz.Location = New-Object System.Drawing.Point(20, 140)
 $numericUpDownStarszeNiz.Size = New-Object System.Drawing.Size(40, 20)
@@ -78,6 +85,7 @@ $numericUpDownStarszeNiz.Minimum = 1
 $numericUpDownStarszeNiz.Value = 7
 $groupBoxTworzenieZadania.Controls.Add($numericUpDownStarszeNiz)
 
+# Button DodajZdarzenie
 $buttonDodajZdarzenie = New-Object System.Windows.Forms.Button
 $buttonDodajZdarzenie.Location = New-Object System.Drawing.Point(280, 140)
 $buttonDodajZdarzenie.Size = New-Object System.Drawing.Size(100, 30)
@@ -88,7 +96,7 @@ $buttonDodajZdarzenie.Add_Click({
     $starszeNiz = $numericUpDownStarszeNiz.Value * -1
     Write-Output $starszeNiz
 
-    # Tworzenie zadania w harmonogramie zadań
+# Tworzenie zadania w harmonogramie zadań
 
     $taskName = "Usuwanie starszych plików"
     $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $taskName }
@@ -143,6 +151,7 @@ $buttonUsunTeraz.Add_Click({
 
  # $MainTabPage.Controls.Add($buttonUsunTeraz)
 
+ #Button Anuluj
 $buttonAnuluj = New-Object System.Windows.Forms.Button
 $buttonAnuluj.Location = New-Object System.Drawing.Point(280, 200)
 $buttonAnuluj.Size = New-Object System.Drawing.Size(100, 30)
