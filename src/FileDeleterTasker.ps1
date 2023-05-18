@@ -85,6 +85,24 @@ $numericUpDownStarszeNiz.Minimum = 1
 $numericUpDownStarszeNiz.Value = 7
 $groupBoxTworzenieZadania.Controls.Add($numericUpDownStarszeNiz)
 
+<#
+# Radio Button "pliki .png, .jpg"
+$radioButtonPngJpg = New-Object System.Windows.Forms.RadioButton
+$radioButtonPngJpg.Text = "pliki .png .jpg"
+$radioButtonPngJpg.Location = New-Object System.Drawing.Point(70, 90)
+$radioButtonPngJpg.AutoSize = $true
+$radioButtonPngJpg.Checked = $false
+$groupBoxTworzenieZadania.Controls.Add($radioButtonPngJpg)
+
+# Radio Button "pliki wszystko"
+$radioButtonAllFiles = New-Object System.Windows.Forms.RadioButton
+$radioButtonAllFiles.Text = "wszystkie pliki"
+$radioButtonAllFiles.Location = New-Object System.Drawing.Point(160, 90)
+$radioButtonAllFiles.AutoSize = $true
+$radioButtonAllFiles.Checked = $true
+$groupBoxTworzenieZadania.Controls.Add($radioButtonAllFiles)
+#>
+
 # Button DodajZdarzenie
 $buttonDodajZdarzenie = New-Object System.Windows.Forms.Button
 $buttonDodajZdarzenie.Location = New-Object System.Drawing.Point(280, 140)
@@ -183,6 +201,7 @@ $numericUpDownStarszeNizUPT.Minimum = 1
 $numericUpDownStarszeNizUPT.Value = 7
 $groupBoxUsunPliki.Controls.Add($numericUpDownStarszeNizUPT)
 
+
 # Radio Button "pliki .png, .jpg"
 $radioButtonPngJpgUPT = New-Object System.Windows.Forms.RadioButton
 $radioButtonPngJpgUPT.Text = "pliki .png .jpg"
@@ -199,15 +218,41 @@ $radioButtonAllFilesUPT.AutoSize = $true
 $radioButtonAllFilesUPT.Checked = $true
 $groupBoxUsunPliki.Controls.Add($radioButtonAllFilesUPT)
 
+$selectTypeFilesUPT = {
+    $lokalizacjaUPT = $textBoxLokalizacjaUPT.Text
+    $starszeNizUPT = $numericUpDownStarszeNizUPT.Value * -1
+    if($radioButtonPngJpgUPT.Checked)
+    {
+       try{ 
+            Get-ChildItem $lokalizacjaUPT -include *.jpg, *.png -Recurse -File  -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Out-GridView
+       }
+       catch{
+        [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacjaUPT  + " nie istnieje",
+        "Błąd",
+        [System.Windows.Forms.MessageBoxButtons]::OK,
+        [System.Windows.Forms.MessageBoxIcon]::Error)
+       }
+    }elseif($radioButtonAllFilesUPT.Checked)
+    {   
+        try{
+            Get-ChildItem $lokalizacjaUPT -Recurse -File  -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Out-GridView 
+        }
+        catch{
+                [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacjaUPT  + " nie istnieje",
+                "Błąd",
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
+    }
+}
+
 #Button Pokaz plik
-$buttonShowFiles = New-Object System.Windows.Forms.Button
-$buttonShowFiles.Location = New-Object System.Drawing.Point(280, 140)
-$buttonShowFiles.Size = New-Object System.Drawing.Size(100, 30)
-$buttonShowFiles.Text = "Usuń pliki"
-$buttonShowFiles.Add_Click({
-    
-})
-$groupBoxUsunPliki.Controls.Add($buttonShowFiles)
+$buttonShowFilesUPT = New-Object System.Windows.Forms.Button
+$buttonShowFilesUPT.Location = New-Object System.Drawing.Point(20, 140)
+$buttonShowFilesUPT.Size = New-Object System.Drawing.Size(100, 30)
+$buttonShowFilesUPT.Text = "Pokaż pliki"
+$buttonShowFilesUPT.Add_Click($selectTypeFilesUPT)
+$groupBoxUsunPliki.Controls.Add($buttonShowFilesUPT)
 
 
 #Button Usuń teraz
@@ -217,27 +262,39 @@ $buttonUsunTeraz.Size = New-Object System.Drawing.Size(100, 30)
 $buttonUsunTeraz.Text = "Usuń pliki"
 $buttonUsunTeraz.Add_Click({
 
-    $lokalizacja = $textBoxLokalizacja.Text
-    $starszeNiz = $numericUpDownStarszeNiz.Value * -1
+    $lokalizacjaUPT = $textBoxLokalizacjaUPT.Text
+    $starszeNizUPT = $numericUpDownStarszeNizUPT.Value * -1
 
-    try{
-    
-        Get-ChildItem $lokalizacja -include *.jpg, *.png -Recurse -File  -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNiz) | Out-GridView #| Remove-Item -Force
-    }
-    catch
+    if($radioButtonPngJpgUPT.Checked)
     {
-        [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacja  + " nie istnieje",
+       try{ 
+            Get-ChildItem $lokalizacjaUPT -include *.jpg, *.png -Recurse -File  -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Remove-Item -Force
+       }
+       catch{
+        [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacjaUPT  + " nie istnieje",
         "Błąd",
         [System.Windows.Forms.MessageBoxButtons]::OK,
         [System.Windows.Forms.MessageBoxIcon]::Error)
-    } 
+       }
+    }elseif($radioButtonAllFilesUPT.Checked)
+    {   
+        try{
+            Get-ChildItem $lokalizacjaUPT -Recurse -File  -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Remove-Item -Force
+        }
+        catch{
+                [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacjaUPT  + " nie istnieje",
+                "Błąd",
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
+    }
 })
 
 $groupBoxUsunPliki.Controls.Add($buttonUsunTeraz)
 
 
  #Button Anuluj
- 
+<#
 $buttonAnuluj = New-Object System.Windows.Forms.Button
 $buttonAnuluj.Location = New-Object System.Drawing.Point(170, 140)
 $buttonAnuluj.Size = New-Object System.Drawing.Size(100, 30)
@@ -246,6 +303,6 @@ $buttonAnuluj.Add_Click({
     $Form.Close()
 })
 $groupBoxUsunPliki.Controls.Add($buttonAnuluj)
-
+#>
 
 [void]$Form.ShowDialog()
