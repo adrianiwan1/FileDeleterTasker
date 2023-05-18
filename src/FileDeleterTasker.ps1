@@ -1,7 +1,7 @@
 ﻿Add-Type -AssemblyName System.Windows.Forms
 
 $Form = New-Object System.Windows.Forms.Form
-$Form.ClientSize = New-Object System.Drawing.Size(430, 270)
+$Form.ClientSize = New-Object System.Drawing.Size(430, 410)
 $Form.Text = "Usuwanie plików starszych niż"
 $Form.TopMost = $false
 
@@ -127,8 +127,92 @@ $groupBoxTworzenieZadania.Controls.Add($buttonDodajZdarzenie)
 
 # Usuń pliki z wskazanej lokalizacji
 
+# GroupBox Delete files
+$groupBoxUsunPliki = New-Object System.Windows.Forms.GroupBox
+$groupBoxUsunPliki.Text = "Usuwanie plików"
+$groupBoxUsunPliki.Location = New-Object System.Drawing.Point(10, 200)
+$groupBoxUsunPliki.Size = New-Object System.Drawing.Size(400, 180)
+$MainTabPage.Controls.Add($groupBoxUsunPliki)
+
+# Label Lokalizacja UPT
+$labelLokalizacjaUPT = New-Object System.Windows.Forms.Label
+$labelLokalizacjaUPT.Text = "Lokalizacja folderu:"
+$labelLokalizacjaUPT.Location = New-Object System.Drawing.Point(20, 20)
+$labelLokalizacjaUPT.AutoSize = $true
+$groupBoxUsunPliki.Controls.Add($labelLokalizacjaUPT)
+
+
+# Folder Browsing UPT
+$folderBrowserDialogUPT = New-Object System.Windows.Forms.FolderBrowserDialog
+$folderBrowserDialogUPT.SelectedPath = "C:\TotalControlParking\CCP_LPR\photo"
+# Button browse UPT
+$buttonBrowseUPT = New-Object System.Windows.Forms.Button
+$buttonBrowseUPT.Text = "Przeglądaj..."
+$buttonBrowseUPT.Location = New-Object System.Drawing.Point(20, 40)
+$buttonBrowseUPT.Size = New-Object System.Drawing.Size(100, 23)
+$buttonBrowseUPT.Add_Click({
+    $result = $folderBrowserDialogUPT.ShowDialog()
+    if ($result -eq "OK") {
+        $textBoxLokalizacjaUPT.Text = $folderBrowserDialogUPT.SelectedPath
+    }
+})
+
+$groupBoxUsunPliki.Controls.Add($buttonBrowseUPT)
+
+#Textbox LokalizacjaUPT
+$textBoxLokalizacjaUPT = New-Object System.Windows.Forms.TextBox
+$textBoxLokalizacjaUPT.ReadOnly = $false
+$textBoxLokalizacjaUPT.Location = New-Object System.Drawing.Point(130, 40)
+$textBoxLokalizacjaUPT.Size = New-Object System.Drawing.Size(250, 20)
+$textBoxLokalizacjaUPT.Text = $folderBrowserDialogUPT.SelectedPath
+$groupBoxUsunPliki.Controls.Add($textBoxLokalizacjaUPT)
+
+#Label StarszeNizUPT
+$labelStarszeNizUPT = New-Object System.Windows.Forms.Label
+$labelStarszeNizUPT.Text = "Usuwać pliki starsze niż (w dniach, max 365):"
+$labelStarszeNizUPT.Location = New-Object System.Drawing.Point(20, 70)
+$labelStarszeNizUPT.AutoSize = $true
+$groupBoxUsunPliki.Controls.Add($labelStarszeNizUPT)
+
+#NumericUpDown StarszeNizUPT
+$numericUpDownStarszeNizUPT = New-Object System.Windows.Forms.NumericUpDown
+$numericUpDownStarszeNizUPT.Location = New-Object System.Drawing.Point(20,90)
+$numericUpDownStarszeNizUPT.Size = New-Object System.Drawing.Size(40, 20)
+$numericUpDownStarszeNizUPT.Maximum = 365
+$numericUpDownStarszeNizUPT.Minimum = 1
+$numericUpDownStarszeNizUPT.Value = 7
+$groupBoxUsunPliki.Controls.Add($numericUpDownStarszeNizUPT)
+
+# Radio Button "pliki .png, .jpg"
+$radioButtonPngJpgUPT = New-Object System.Windows.Forms.RadioButton
+$radioButtonPngJpgUPT.Text = "pliki .png .jpg"
+$radioButtonPngJpgUPT.Location = New-Object System.Drawing.Point(70, 90)
+$radioButtonPngJpgUPT.AutoSize = $true
+$radioButtonPngJpgUPT.Checked = $false
+$groupBoxUsunPliki.Controls.Add($radioButtonPngJpgUPT)
+
+# Radio Button "pliki wszystko"
+$radioButtonAllFilesUPT = New-Object System.Windows.Forms.RadioButton
+$radioButtonAllFilesUPT.Text = "wszystkie pliki"
+$radioButtonAllFilesUPT.Location = New-Object System.Drawing.Point(160, 90)
+$radioButtonAllFilesUPT.AutoSize = $true
+$radioButtonAllFilesUPT.Checked = $true
+$groupBoxUsunPliki.Controls.Add($radioButtonAllFilesUPT)
+
+#Button Pokaz plik
+$buttonShowFiles = New-Object System.Windows.Forms.Button
+$buttonShowFiles.Location = New-Object System.Drawing.Point(280, 140)
+$buttonShowFiles.Size = New-Object System.Drawing.Size(100, 30)
+$buttonShowFiles.Text = "Usuń pliki"
+$buttonShowFiles.Add_Click({
+    
+})
+$groupBoxUsunPliki.Controls.Add($buttonShowFiles)
+
+
+#Button Usuń teraz
 $buttonUsunTeraz = New-Object System.Windows.Forms.Button
-$buttonUsunTeraz.Location = New-Object System.Drawing.Point(130, 200)
+$buttonUsunTeraz.Location = New-Object System.Drawing.Point(280, 140)
 $buttonUsunTeraz.Size = New-Object System.Drawing.Size(100, 30)
 $buttonUsunTeraz.Text = "Usuń pliki"
 $buttonUsunTeraz.Add_Click({
@@ -149,16 +233,19 @@ $buttonUsunTeraz.Add_Click({
     } 
 })
 
- # $MainTabPage.Controls.Add($buttonUsunTeraz)
+$groupBoxUsunPliki.Controls.Add($buttonUsunTeraz)
+
 
  #Button Anuluj
+ 
 $buttonAnuluj = New-Object System.Windows.Forms.Button
-$buttonAnuluj.Location = New-Object System.Drawing.Point(280, 200)
+$buttonAnuluj.Location = New-Object System.Drawing.Point(170, 140)
 $buttonAnuluj.Size = New-Object System.Drawing.Size(100, 30)
 $buttonAnuluj.Text = "Anuluj"
 $buttonAnuluj.Add_Click({
     $Form.Close()
 })
-# $MainTabPage.Controls.Add($buttonAnuluj)
+$groupBoxUsunPliki.Controls.Add($buttonAnuluj)
+
 
 [void]$Form.ShowDialog()
