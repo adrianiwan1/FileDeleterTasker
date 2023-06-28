@@ -62,13 +62,6 @@ $labelPicker.Location = New-Object System.Drawing.Point(20, 70)
 $labelPicker.AutoSize = $true
 $groupBoxTworzenieZadania.Controls.Add($labelPicker)
 
-#Tabllica z zadaniami
-$taskPathToTable = "\UsuwaniePlikow\*"
-$printTasksToTable = Get-ScheduledTask -TaskPath $taskPathToTable | Select-Object -ExpandProperty TaskName
-$taskTable=@()
-foreach ($task in $printTasksToTable) {
-    $taskTable += $task
-}
 
 #DropDown List zadanie
 $DropDownListZadanie = New-Object System.Windows.Forms.ComboBox
@@ -76,9 +69,14 @@ $DropDownListZadanie.Location = New-Object System.Drawing.Size (20,90)
 $DropDownListZadanie.Size = New-Object System.Drawing.Size(180,20)
 $DropDownListZadanie.DropDownHeight = 200
 $DropDownListZadanie.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDown
-foreach ($zadanie in $taskTable) {
-    $DropDownListZadanie.Items.Add($zadanie)
+# funkcja dodawania i uzupełniania listy
+function Get-TasksName{
+    $taskPathToTable = "\UsuwaniePlikow\*"
+    $printTasksToTable = @(Get-ScheduledTask -TaskPath $taskPathToTable | Select-Object -ExpandProperty TaskName)
+    $taskTable = $printTasksToTable
+    $DropDownListZadanie.Items.AddRange($taskTable)
 }
+Get-TasksName
 $groupBoxTworzenieZadania.Controls.Add($DropDownListZadanie)
 
 # Label Godzina
@@ -168,6 +166,9 @@ $buttonDodajZdarzenie.Add_Click({
             [System.Windows.Forms.MessageBoxIcon]::Error)
         }
     }
+    
+    $DropDownListZadanie.Items.Clear();
+    Get-TasksName
 })
 
 $groupBoxTworzenieZadania.Controls.Add($buttonDodajZdarzenie)
