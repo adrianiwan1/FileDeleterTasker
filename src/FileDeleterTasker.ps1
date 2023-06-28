@@ -3,6 +3,8 @@
 $Form = New-Object System.Windows.Forms.Form
 $Form.ClientSize = New-Object System.Drawing.Size(430, 410)
 $Form.Text = "Usuwanie plików starszych niż"
+$Form.FormBorderStyle = 'Fixed3D'
+$Form.AutoSize = $false
 $Form.TopMost = $false
 
 $MainTabControl = New-Object System.Windows.Forms.TabControl
@@ -53,10 +55,36 @@ $textBoxLokalizacja.Size = New-Object System.Drawing.Size(250, 20)
 $textBoxLokalizacja.Text = $folderBrowserDialog.SelectedPath
 $groupBoxTworzenieZadania.Controls.Add($textBoxLokalizacja)
 
+# Label picker
+$labelPicker = New-Object System.Windows.Forms.Label
+$labelPicker.Text = "Wybierz zadanie:"
+$labelPicker.Location = New-Object System.Drawing.Point(20, 70)
+$labelPicker.AutoSize = $true
+$groupBoxTworzenieZadania.Controls.Add($labelPicker)
+
+#Tabllica z zadaniami
+$taskPathToTable = "\UsuwaniePlikow\*"
+$printTasksToTable = Get-ScheduledTask -TaskPath $taskPathToTable | Select-Object -ExpandProperty TaskName
+$taskTable=@()
+foreach ($task in $printTasksToTable) {
+    $taskTable += $task
+}
+
+#DropDown List zadanie
+$DropDownListZadanie = New-Object System.Windows.Forms.ComboBox
+$DropDownListZadanie.Location = New-Object System.Drawing.Size (20,90)
+$DropDownListZadanie.Size = New-Object System.Drawing.Size(180,20)
+$DropDownListZadanie.DropDownHeight = 200
+$DropDownListZadanie.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDown
+foreach ($zadanie in $taskTable) {
+    $DropDownListZadanie.Items.Add($zadanie)
+}
+$groupBoxTworzenieZadania.Controls.Add($DropDownListZadanie)
+
 # Label Godzina
 $labelGodzina = New-Object System.Windows.Forms.Label
 $labelGodzina.Text = "Godzina uruchamiania zadania:"
-$labelGodzina.Location = New-Object System.Drawing.Point(20, 70)
+$labelGodzina.Location = New-Object System.Drawing.Point(220, 70)
 $labelGodzina.AutoSize = $true
 $groupBoxTworzenieZadania.Controls.Add($labelGodzina)
 
@@ -65,7 +93,7 @@ $dateTimePickerGodzina = New-Object System.Windows.Forms.DateTimePicker
 $dateTimePickerGodzina.Format = [System.Windows.Forms.DateTimePickerFormat]::Custom
 $dateTimePickerGodzina.CustomFormat = "HH:mm"
 $dateTimePickerGodzina.ShowUpDown = $true
-$dateTimePickerGodzina.Location = New-Object System.Drawing.Point(20, 90)
+$dateTimePickerGodzina.Location = New-Object System.Drawing.Point(330, 90)
 $dateTimePickerGodzina.Size = New-Object System.Drawing.Size(50, 30)
 $groupBoxTworzenieZadania.Controls.Add($dateTimePickerGodzina)
 
@@ -117,18 +145,19 @@ $buttonDodajZdarzenie.Add_Click({
 # Tworzenie zadania w harmonogramie zadań
 
     $taskName = "Usuwanie starszych plików"
-    $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $taskName }
+    $TaskNameDropDownList = $DropDownListZadanie.Text.ToString()
+    $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $TaskNameDropDownList }
 
     $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Command `"Get-ChildItem '$lokalizacja' -Recurse -File | Where CreationTime -lt  (Get-Date).AddDays($starszeNiz)  | Remove-Item -Force"
     $trigger = New-ScheduledTaskTrigger -Daily -At $godzina
     $settings = New-ScheduledTaskSettingsSet
 
     if($taskExists) {
-        Set-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings
+        Set-ScheduledTask -TaskName $TaskNameDropDownList -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings
         [System.Windows.Forms.MessageBox]::Show("Zdarzenie zostało zaktualizowane.", "Informacja", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information) 
     } else {
         try{
-            Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings -ErrorAction Stop
+            Register-ScheduledTask -TaskName $TaskNameDropDownList -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings -ErrorAction Stop
             [System.Windows.Forms.MessageBox]::Show("Zdarzenie usuwania zostało utworzone.", "Informacja", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
         }
         catch
@@ -224,7 +253,7 @@ $selectTypeFilesUPT = {
     if($radioButtonPngJpgUPT.Checked)
     {
        try{ 
-            Get-ChildItem $lokalizacjaUPT -include *.jpg, *.png -Recurse -File  -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Out-GridView
+            Get-ChildItem $lokalizacjaUPT -include *.jpg, *.png -Recurse -ErrorAction Stop -ErrorVariable FileErrors| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Out-GridView
        }
        catch{
         [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacjaUPT  + " nie istnieje",
@@ -235,7 +264,7 @@ $selectTypeFilesUPT = {
     }elseif($radioButtonAllFilesUPT.Checked)
     {   
         try{
-            Get-ChildItem $lokalizacjaUPT -Recurse -File  -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Out-GridView 
+            Get-ChildItem $lokalizacjaUPT -Recurse -ErrorAction Stop -ErrorVariable FileErrors| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Out-GridView 
         }
         catch{
                 [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacjaUPT  + " nie istnieje",
@@ -268,7 +297,7 @@ $buttonUsunTeraz.Add_Click({
     if($radioButtonPngJpgUPT.Checked)
     {
        try{ 
-            Get-ChildItem $lokalizacjaUPT -include *.jpg, *.png -Recurse -File  -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Remove-Item -Force
+            Get-ChildItem $lokalizacjaUPT+"\*" -include *.jpg, *.png -File -Recurse -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Remove-Item -Force
        }
        catch{
         [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacjaUPT  + " nie istnieje",
@@ -279,7 +308,7 @@ $buttonUsunTeraz.Add_Click({
     }elseif($radioButtonAllFilesUPT.Checked)
     {   
         try{
-            Get-ChildItem $lokalizacjaUPT -Recurse -File  -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Remove-Item -Force
+            Get-ChildItem $lokalizacjaUPT+"\*" -Recurse -File -ErrorAction Stop| Where-Object CreationTime -lt  (Get-Date).AddDays($starszeNizUPT) | Remove-Item -Force
         }
         catch{
                 [System.Windows.Forms.MessageBox]::Show("Folder " + $lokalizacjaUPT  + " nie istnieje",
