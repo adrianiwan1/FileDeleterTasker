@@ -62,13 +62,6 @@ $labelPicker.Location = New-Object System.Drawing.Point(20, 70)
 $labelPicker.AutoSize = $true
 $groupBoxTworzenieZadania.Controls.Add($labelPicker)
 
-#Tabllica z zadaniami
-$taskPathToTable = "\UsuwaniePlikow\*"
-$printTasksToTable = Get-ScheduledTask -TaskPath $taskPathToTable | Select-Object -ExpandProperty TaskName
-$taskTable=@()
-foreach ($task in $printTasksToTable) {
-    $taskTable += $task
-}
 
 #DropDown List zadanie
 $DropDownListZadanie = New-Object System.Windows.Forms.ComboBox
@@ -76,9 +69,14 @@ $DropDownListZadanie.Location = New-Object System.Drawing.Size (20,90)
 $DropDownListZadanie.Size = New-Object System.Drawing.Size(180,20)
 $DropDownListZadanie.DropDownHeight = 200
 $DropDownListZadanie.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDown
-foreach ($zadanie in $taskTable) {
-    $DropDownListZadanie.Items.Add($zadanie)
+# funkcja dodawania i uzupełniania listy
+function Get-TasksName{
+    $taskPathToTable = "\Propark\*"
+    $printTasksToTable = @(Get-ScheduledTask -TaskPath $taskPathToTable | Select-Object -ExpandProperty TaskName)
+    $taskTable = $printTasksToTable
+    $DropDownListZadanie.Items.AddRange($taskTable)
 }
+Get-TasksName
 $groupBoxTworzenieZadania.Controls.Add($DropDownListZadanie)
 
 # Label Godzina
@@ -145,6 +143,7 @@ $buttonDodajZdarzenie.Add_Click({
 # Tworzenie zadania w harmonogramie zadań
 
     $taskName = "Usuwanie starszych plików"
+    $taskPath = "Propark"
     $TaskNameDropDownList = $DropDownListZadanie.Text.ToString()
     $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $TaskNameDropDownList }
 
@@ -153,11 +152,11 @@ $buttonDodajZdarzenie.Add_Click({
     $settings = New-ScheduledTaskSettingsSet
 
     if($taskExists) {
-        Set-ScheduledTask -TaskName $TaskNameDropDownList -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings
+        Set-ScheduledTask -TaskName $TaskNameDropDownList -Action $action -Trigger $trigger -TaskPath $taskPath -Settings $settings
         [System.Windows.Forms.MessageBox]::Show("Zdarzenie zostało zaktualizowane.", "Informacja", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information) 
     } else {
         try{
-            Register-ScheduledTask -TaskName $TaskNameDropDownList -Action $action -Trigger $trigger -TaskPath "UsuwaniePlikow" -Settings $settings -ErrorAction Stop
+            Register-ScheduledTask -TaskName $TaskNameDropDownList -Action $action -Trigger $trigger -TaskPath $taskPath -Settings $settings -ErrorAction Stop
             [System.Windows.Forms.MessageBox]::Show("Zdarzenie usuwania zostało utworzone.", "Informacja", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
         }
         catch
@@ -168,6 +167,9 @@ $buttonDodajZdarzenie.Add_Click({
             [System.Windows.Forms.MessageBoxIcon]::Error)
         }
     }
+    
+    $DropDownListZadanie.Items.Clear();
+    Get-TasksName
 })
 
 $groupBoxTworzenieZadania.Controls.Add($buttonDodajZdarzenie)
